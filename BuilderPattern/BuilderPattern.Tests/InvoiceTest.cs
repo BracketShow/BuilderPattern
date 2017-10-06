@@ -1,41 +1,40 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using FluentAssertions;
 using NUnit.Framework;
 
-namespace BuilderPattern.Tests {
-
+namespace BuilderPattern.Tests
+{
     [TestFixture]
-    public class InvoiceTest {
-        private InvoiceBuilder _invoiceBuilder;
+    public class InvoiceTest
+    {
+        [Test]
+        public void CalculatePriceOnNewInvoice()
+        {
+            var invoice = new InvoiceBuilder()
+                .Build();
 
-        [SetUp]
-        public void Setup() {
-            _invoiceBuilder = new InvoiceBuilder();
-            _invoiceBuilder.WithClientName("Mon client")
-                .WithInvoiceNumber(123);
+            invoice.InvoiceTotal.Should().Be(0);
         }
 
         [Test]
-        public void CalculateInvoiceTotalWithNoProducts() {
+        public void CalculateInvoiceTotalWithOnlySimpleProducts()
+        {
+            var invoice = new InvoiceBuilder()
+                .WithProduct(pb => pb.WithPrice(10))
+                .Build();
 
+            invoice.InvoiceTotal.Should().Be(10);
         }
 
         [Test]
-        public void CalculateInvoiceTotalWithOnlySimpleProducts() {
+        public void CalculateInvoiceWhenOverdue()
+        {
+            var invoice = new InvoiceBuilder()
+                .WithProduct(pb => pb.WithPrice(10))
+                .WithDueDate(DateTime.Now.AddDays(-35))
+                .Build();
 
-        }
-
-        [Test]
-        public void CalculateInvoiceTotalWithOnlyConfigurableProducts() {
-
-        }
-
-        [Test]
-        public void CalculateInvoiceTotalWithSimpleAndConfigurableProducts() {
-
+            invoice.InvoiceTotal.Should().Be(15);
         }
     }
 }
